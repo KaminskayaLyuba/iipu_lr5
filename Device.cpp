@@ -62,7 +62,7 @@ string Device::getGUID(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoData)
 	return string(buff);
 }
 
-void Device::getDriverInfo(GUID guid , string *hardwareID, string *manufacturer, string *provider, string *driverDescription)
+void Device::getDriverInfo(GUID guid , DWORD devIndex, string *hardwareID, string *manufacturer, string *provider, string *driverDescription)
 {
 	HDEVINFO hDevInfo = 0;
 	SP_DEVINFO_DATA  spDevInfoData = { 0 };
@@ -70,22 +70,22 @@ void Device::getDriverInfo(GUID guid , string *hardwareID, string *manufacturer,
 	SP_DRVINFO_DETAIL_DATA_A spDrvInfoDetail = { 0 };
 	int index = 0;
 
-	hDevInfo = SetupDiGetClassDevs(&guid, 0, NULL, DIGCF_PRESENT);
+	hDevInfo = SetupDiGetClassDevs(&guid, 0, NULL, DIGCF_PRESENT);						//получить новый список устройств по этому GUID в системе
 
 	spDevInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
-	if (SetupDiEnumDeviceInfo(hDevInfo,
-		0,
+	if (SetupDiEnumDeviceInfo(hDevInfo,													//получить хендл на информацию об устройстве
+		devIndex,
 		&spDevInfoData))
 	{
 
-		if (SetupDiBuildDriverInfoList(hDevInfo,
+		if (SetupDiBuildDriverInfoList(hDevInfo,										//построить список совместимых драйверов для этого устройства
 			&spDevInfoData,
 			SPDIT_COMPATDRIVER))
 		{
 			spDrvInfoData.cbSize = sizeof(SP_DRVINFO_DATA_A);
 			while (1)
 			{
-				if (SetupDiEnumDriverInfoA(hDevInfo,
+				if (SetupDiEnumDriverInfoA(hDevInfo,									//получить совмстимый драйвер по индексу
 					&spDevInfoData,
 					SPDIT_COMPATDRIVER,
 					index,
@@ -98,7 +98,7 @@ void Device::getDriverInfo(GUID guid , string *hardwareID, string *manufacturer,
 					memcpy(&spDrvInfoDetail, szBuf, sizeof(SP_DRVINFO_DETAIL_DATA_A));
 					spDrvInfoDetail.cbSize = sizeof(SP_DRVINFO_DETAIL_DATA_A);
 					DWORD dwRequireSize = 0;
-					if (SetupDiGetDriverInfoDetailA(hDevInfo,
+					if (SetupDiGetDriverInfoDetailA(hDevInfo,							//получить подрубную информацию о драйвере				
 						&spDevInfoData,
 						&spDrvInfoData,
 						&spDrvInfoDetail,
@@ -129,7 +129,7 @@ string Device::getDevicePath(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoData)
 
 	spDevInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 
-	if (SetupDiCreateDeviceInterface(hDevInfo,
+	if (SetupDiCreateDeviceInterface(hDevInfo,					//получить информацию об интерфейсе
 		&spDevInfoData,
 		&spDevInfoData.ClassGuid,
 		0,
@@ -137,14 +137,14 @@ string Device::getDevicePath(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoData)
 		&spDevInterfaceData))
 
 	{
-		SetupDiGetDeviceInterfaceDetail(hDevInfo, &spDevInterfaceData, 0, 0, &required, 0);
+		SetupDiGetDeviceInterfaceDetail(hDevInfo, &spDevInterfaceData, 0, 0, &required, 0);				//получить размер детальной информации
 
 		SP_DEVICE_INTERFACE_DETAIL_DATA_A *spDevInterfaceDetail;
 		spDevInterfaceDetail = (SP_DEVICE_INTERFACE_DETAIL_DATA_A*)LocalAlloc(LPTR,
 			sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_A)*required);
 
 		spDevInterfaceDetail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_A);
-		if (SetupDiGetDeviceInterfaceDetailA(hDevInfo,
+		if (SetupDiGetDeviceInterfaceDetailA(hDevInfo,													//получить етальную информацию об интерфейсе
 			&spDevInterfaceData,
 			spDevInterfaceDetail,
 			required,
@@ -164,8 +164,7 @@ string Device::getDriverFullName(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoDat
 {
 	string result;
 	char serviceName[64];
-	//Get service name of device
-	if (SetupDiGetDeviceRegistryPropertyA(hDevInfo,
+	if (SetupDiGetDeviceRegistryPropertyA(hDevInfo,								//получить имя сервиса
 		&spDevInfoData,
 		SPDRP_SERVICE,
 		0,
@@ -179,7 +178,7 @@ string Device::getDriverFullName(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoDat
 		DWORD cbData;
 		DWORD dwType;
 		strcat(szSubKey, serviceName);
-		if (RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+		if (RegOpenKeyExA(HKEY_LOCAL_MACHINE,									//получить доступ к ключу реестра с полным доступом
 			szSubKey,
 			0,
 			KEY_ALL_ACCESS,
@@ -187,7 +186,7 @@ string Device::getDriverFullName(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoDat
 		{
 			cbData = MAX_PATH - 1;
 			dwType = REG_EXPAND_SZ;
-			if (RegQueryValueExA(hKey, REG_IMAGE, 0L,
+			if (RegQueryValueExA(hKey, REG_IMAGE, 0L,							//получаем поле ключа(путь к файлу драйвера)
 				&dwType,
 				(unsigned char*)szPath,
 				&cbData) == ERROR_SUCCESS)
@@ -205,20 +204,18 @@ string Device::getDriverFullName(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoDat
 
 bool Device::deviceChangeStatus(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoData, bool status)
 {
-	SP_PROPCHANGE_PARAMS spPropChangeParams;
+	SP_PROPCHANGE_PARAMS spPropChangeParams;											
 
 	spPropChangeParams.ClassInstallHeader.cbSize = sizeof(SP_CLASSINSTALL_HEADER);
-	spPropChangeParams.ClassInstallHeader.InstallFunction = DIF_PROPERTYCHANGE;
-	spPropChangeParams.Scope = DICS_FLAG_GLOBAL;
+	spPropChangeParams.ClassInstallHeader.InstallFunction = DIF_PROPERTYCHANGE;				//название функции которую нужно будет запустить (изменить свойства)
+	spPropChangeParams.Scope = DICS_FLAG_GLOBAL;											
 	if (status)
 		spPropChangeParams.StateChange = DISC_ENABLE; 
 	else
 		spPropChangeParams.StateChange = DISC_DISABLE;
-	DWORD errorCode;
-	//   
-	if (SetupDiSetClassInstallParams(hDevInfo, &spDevInfoData, &spPropChangeParams.ClassInstallHeader, sizeof(spPropChangeParams)))
+	if (SetupDiSetClassInstallParams(hDevInfo, &spDevInfoData, &spPropChangeParams.ClassInstallHeader, sizeof(spPropChangeParams)))			//отпраить настроки в систему
 	{
-		if (SetupDiCallClassInstaller(DIF_PROPERTYCHANGE, hDevInfo, &spDevInfoData))
+		if (SetupDiCallClassInstaller(DIF_PROPERTYCHANGE, hDevInfo, &spDevInfoData))														//изменить свойства
 		{
 			return true;
 		}

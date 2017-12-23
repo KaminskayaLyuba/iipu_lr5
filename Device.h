@@ -18,14 +18,14 @@ class Device
 {
 public:
 	Device();
-	static string getDeviceClassDescription(SP_DEVINFO_DATA spDevInfoData);
-	static string getDeviceName(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoData);
-	static string getGUID(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoData);
-	static void getDriverInfo(GUID guid, string *hardwareID, string *manufacturer, string *provider, string *driverDescription);
-	static string getDevicePath(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoData);
-	static string getDriverFullName(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoData);
-	static bool deviceChangeStatus(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoData, bool status);
-	static bool isEnabled(SP_DEVINFO_DATA spDevInfoData);
+	static string getDeviceClassDescription(SP_DEVINFO_DATA spDevInfoData);						//получить описани класса
+	static string getDeviceName(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoData);				//получить имя устройства
+	static string getGUID(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoData);					//получить GUID
+	static void getDriverInfo(GUID guid, DWORD index, string *hardwareID, string *manufacturer, string *provider, string *driverDescription);		//получить информацию из драйвера (hardwareID, производитель, провайдер, описаниедрайвера)
+	static string getDevicePath(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoData);				//почить путь к устроству
+	static string getDriverFullName(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoData);			//получить полный путь к драйверу
+	static bool deviceChangeStatus(HDEVINFO hDevInfo, SP_DEVINFO_DATA spDevInfoData, bool status);		//изменить состояние устройства 
+	static bool isEnabled(SP_DEVINFO_DATA spDevInfoData);												//получить состояние устройства
 	~Device();
 };
 

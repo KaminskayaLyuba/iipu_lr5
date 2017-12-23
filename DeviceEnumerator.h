@@ -11,19 +11,19 @@ using namespace std;
 
 typedef struct DEVICE_INFO
 {
-	HDEVINFO hDevInfo;
-	SP_DEVINFO_DATA spDevInfoData;
-	string classDescription;
-	string deviceName;
-	string guid_string;
-	GUID guid;
-	string hardwareID;
-	string manufacturer;
-	string provider;
-	string driverDescription;
-	string devicePath;
-	string driverFullName;
-	bool isEnabled;
+	HDEVINFO hDevInfo;						//хендл семейства 
+	SP_DEVINFO_DATA spDevInfoData;			//хендл устройства
+	string classDescription;				//описание класса
+	string deviceName;						//имя устройства
+	string guid_string;						//GUID стокой
+	GUID guid;								//GUID
+	string hardwareID;						//hardwareID
+	string manufacturer;					//производитель
+	string provider;						//провайдер
+	string driverDescription;				//описание драйвера
+	string devicePath;						//путь к устройству
+	string driverFullName;					//полнй путь к драйверу
+	bool isEnabled;							//состояне устройства
 }DEV_INFO;
 
 class DeviceEnumerator

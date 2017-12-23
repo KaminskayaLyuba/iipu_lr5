@@ -20,7 +20,7 @@ vector<DEVICE_INFO> DeviceEnumerator::getDevices()
 	SP_DRVINFO_DATA spDrvInfoData = { 0 };
 	SP_DRVINFO_DETAIL_DATA spDrvInfoDetail = { 0 };
 	int index = 0;
-	hDevInfo = SetupDiGetClassDevs(0, 0, NULL, DIGCF_PRESENT |
+	hDevInfo = SetupDiGetClassDevs(0, 0, NULL, DIGCF_PRESENT |										//получить все устройства, всех классов, которые сейчас доступны и в системе 
 		DIGCF_ALLCLASSES | DIGCF_PROFILE);
 
 
@@ -39,7 +39,6 @@ vector<DEVICE_INFO> DeviceEnumerator::getDevices()
 			deviceInfo.deviceName = Device::getDeviceName(hDevInfo, spDevInfoData);
 			deviceInfo.guid_string = Device::getGUID(hDevInfo, spDevInfoData);
 			deviceInfo.guid = spDevInfoData.ClassGuid;
-			//Device::getDriverInfo(deviceInfo.guid, &deviceInfo.hardwareID, &deviceInfo.manufacturer, &deviceInfo.provider, &deviceInfo.driverDescription);
 			deviceInfo.devicePath = Device::getDevicePath(hDevInfo, spDevInfoData);
 			deviceInfo.driverFullName = Device::getDriverFullName(hDevInfo, spDevInfoData);
 			deviceInfo.isEnabled = Device::isEnabled(spDevInfoData);

@@ -84,10 +84,10 @@ void MainWindow::Tree_Click(System::Object^ Sender, TreeViewEventArgs ^e)
 		DEV_INFO info = *it;
 		String ^name = gcnew String(info.deviceName.c_str());
 		String ^guid = gcnew String(info.guid_string.c_str());
-		String ^tag = (String ^)node->Tag;
+		String ^tag = (String ^)node->Tag;		
 		if (node->Text == name && tag == guid)
 		{
-			Device::getDriverInfo(info.guid, &info.hardwareID, &info.manufacturer, &info.provider, &info.driverDescription);
+			Device::getDriverInfo(info.guid, node->Index, &info.hardwareID, &info.manufacturer, &info.provider, &info.driverDescription);
 			ListViewItem ^guidItem = gcnew ListViewItem("GUID");
 			String ^guidM = gcnew String(info.guid_string.c_str());
 			guidItem->SubItems->Add(guidM);
